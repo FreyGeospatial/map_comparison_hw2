@@ -28,12 +28,14 @@ my_nonbuilt_reclass <- rbind(built, not_built)
 not_built_bool_71 <- reclassify(lc_1971, rcl = my_nonbuilt_reclass) # will be masked image
 
 #distance calculation
-distance_71 <- gridDistance(built_bool_71, 1)
-plot(distance_71) #calculates distance from all cells with val of 1
+distance_71 <- gridDistance(built_bool_71, 1) #calculates distance from all cells with val of 1
+plot(distance_71,
+     main = "Distance from Built Areas: 1971")
 
 # gain of built -- will be boolean image
 gain_of_built <- built_bool_85 != built_bool_71
-plot(gain_of_built)
+plot(gain_of_built,
+     main = "Gain of Built Areas: 1971-1985")
 
 # Q1 Analysis:
 #######################################################
