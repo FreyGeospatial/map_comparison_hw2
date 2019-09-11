@@ -71,7 +71,7 @@ my_TOC2 <- TOC(index = reclassed_1971,
                NAval = 0,
                progress = T)
 
-plot(my_TOC2)
+plot(my_TOC2, labelThres = T, posL = 4)
 
 
 
