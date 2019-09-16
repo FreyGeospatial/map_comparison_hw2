@@ -41,13 +41,15 @@ plot(gain_of_built,
 #######################################################
 
 # TOC Curve for Q1: Use TOC to describe the relationship between Gain of 
-# Built between 71-85 and distance from Built at 71
-my_TOC1 <- TOC(index = distance_71, 
+# Built between 71-85 and distance from Built at 71. Uses (-) on the index
+# bercause the sequential order of values needs to start at LOW and go to HIGH
+my_TOC1 <- TOC(index = -distance_71, 
                boolean = gain_of_built,
                mask = not_built_bool_71,
                NAval = 0,
                progress = T)
-plot(my_TOC1)
+plot(my_TOC1,
+     main = "Relationship between Gain of Built 1971-85 and Distance from Built in 1971")
 
 # Q2 Data Prep:
 ######################################################
@@ -71,7 +73,8 @@ my_TOC2 <- TOC(index = reclassed_1971,
                NAval = 0,
                progress = T)
 
-plot(my_TOC2, labelThres = T, posL = 4)
+plot(my_TOC2, labelThres = T, posL = 4,
+     main = "Relationship Between Gain of Built 1971-1985 and Landuse in 1971")
 
 
 
