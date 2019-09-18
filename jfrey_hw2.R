@@ -13,7 +13,7 @@ lc_1985 <- raster("Landcover01/1985Landcover01.rst")
 
 #Plot index variables
 levels(lc_1971)[[1]]["Value"] <- levels(lc_1971)[[1]]["Class_name"]
-levelplot(lc_1971, main = "Landcover: 1971") + 
+levelplot(lc_1971, main = "Landcover: 1971", xlab = "Meters", ylab = "Meters") + 
   layer({
     SpatialPolygonsRescale(layout.north.arrow(),
                            offset = c(230020,926520),
@@ -24,7 +24,7 @@ levelplot(lc_1971, main = "Landcover: 1971") +
   })
 
 levels(lc_1985)[[1]]["Value"] <- levels(lc_1971)[[1]]["Class_name"]
-levelplot(lc_1985, main = "Landcover: 1985") + 
+levelplot(lc_1985, main = "Landcover: 1985", xlab = "Meters", ylab = "Meters") + 
   layer({
     SpatialPolygonsRescale(layout.north.arrow(),
                            offset = c(230020,926520),
@@ -63,8 +63,22 @@ levels(built_bool_85) <- rat
 
 levelplot(built_bool_71,
           main = "Boolean Image of Built Landcover: 1971",
-          ylab = "")
-levelplot(built_bool_85)
+          ylab = "Meters",
+          xlab = "Meters") + 
+  layer({
+    SpatialPolygonsRescale(layout.north.arrow(),
+                           offset = c(230020,926520),
+                           scale = 220,
+                           col = "darkgrey",
+                           fill = "darkgrey")
+    SpatialPolygonsRescale(layout.scale.bar(),
+                           offset = c(229500, 926595),
+                           scale = 500, txt = "500", fill = c("darkgrey", "white"), col = "darkgrey", at = 250)
+  })
+levelplot(built_bool_85,
+          main = "Boolean Image of Built Landcover: 1985",
+          ylab = "Meters",
+          xlab = "Meters")
 
 
 
@@ -74,17 +88,61 @@ not_built <- rbind(c(2L, 1L),
                    c(3L, 1L), 
                    c(4L, 1L))
 my_nonbuilt_reclass <- rbind(built, not_built)
-not_built_bool_71 <- reclassify(lc_1971, rcl = my_nonbuilt_reclass) # will be masked image
+not_built_bool_71 <- reclassify(lc_1971, rcl = my_nonbuilt_reclass) %>% 
+  as.factor() #masked image
+rat <- levels(not_built_bool_71)[[1]]
+rat$landcover <- c("Built", "Not Built")
+levels(not_built_bool_71) <- rat
 
+levelplot(not_built_bool_71, margin=F, main = "Non-Built Areas: 1971", ylab = "Meters", xlab = "Meters") + 
+  layer({
+    SpatialPolygonsRescale(layout.north.arrow(),
+                           offset = c(230020,926520),
+                           scale = 220,
+                           col = "black",
+                           fill = "black")
+    SpatialPolygonsRescale(layout.scale.bar(),
+                           offset = c(229500, 926595),
+                           scale = 500, txt = "500", fill = c("transparent", "black"), col = "black", at = 250)
+  })
 #distance calculation
 distance_71 <- gridDistance(built_bool_71, 1) #calculates distance from all cells with val of 1
-plot(distance_71,
-     main = "Distance from Built Areas: 1971")
+levelplot(distance_71,
+     main = "Distance from Built Areas: 1971",
+     margin = F,
+     xlab = "Meters",
+     ylab = "Meters") + 
+  layer({
+    SpatialPolygonsRescale(layout.north.arrow(),
+                           offset = c(230020,926520),
+                           scale = 220,
+                           col = "black",
+                           fill = "white")
+    SpatialPolygonsRescale(layout.scale.bar(),
+                           offset = c(229500, 926595),
+                           scale = 500, txt = "500", fill = c("transparent", "white"), col = "black", at = 250)
+  })
 
 # gain of built -- will be boolean image
-gain_of_built <- built_bool_85 != built_bool_71
-plot(gain_of_built,
-     main = "Gain of Built Areas: 1971-1985")
+gain_of_built <- (built_bool_85 != built_bool_71) %>% 
+  as.factor()
+rat <- levels(gain_of_built)[[1]]
+rat$landcover <- c("No Gain", "Gain")
+levels(gain_of_built) <- rat
+
+
+levelplot(gain_of_built,
+     main = "Gain of Built Areas: 1971-1985", xlab = "Meters", ylab = "Meters") +
+  layer({
+    SpatialPolygonsRescale(layout.north.arrow(),
+                           offset = c(230020,926520),
+                           scale = 220,
+                           col = "darkgrey",
+                           fill = "darkgrey")
+    SpatialPolygonsRescale(layout.scale.bar(),
+                           offset = c(229500, 926595),
+                           scale = 500, txt = "500", fill = c("darkgray", "white"), col = "darkgrey", at = 250)
+  })
 
 # Q1 Analysis:
 #######################################################
@@ -119,6 +177,15 @@ rat$landcover <- c("Built",
                    "Forest",
                    "Baren")
 levels(reclassed_1971) <- rat
+levelplot(reclassed_1971, xlab = "Meters", ylab = "Meters", main = "Reclassified Landcover for TOC: 1971") + 
+  layer({
+    SpatialPolygonsRescale(layout.north.arrow(),
+                           offset = c(230020,926520),
+                           scale = 220)
+    SpatialPolygonsRescale(layout.scale.bar(),
+                           offset = c(229500, 926595),
+                           scale = 500, txt = "500", fill = c("transparent", "black"), col = "black", at = 250)
+  })
   
 # Q2 Analysis:
 #####################################################
