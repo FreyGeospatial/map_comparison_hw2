@@ -1,12 +1,44 @@
 #load packages
 library(TOC)
+library(rasterVis)
+library(magrittr)
 
 #load data
-lc_1971 <- raster("Landcover01/1971Landcover01.rst")
+lc_1971 <- raster("Landcover01/1971Landcover01.rst")#1 = built,
+                                                    #2 = barren
+                                                    #3 = forest
+                                                    #4 = water
+
 lc_1985 <- raster("Landcover01/1985Landcover01.rst")
+
+#Plot index variables
+levels(lc_1971)[[1]]["Value"] <- levels(lc_1971)[[1]]["Class_name"]
+levelplot(lc_1971, main = "Landcover: 1971") + 
+  layer({
+    SpatialPolygonsRescale(layout.north.arrow(),
+                           offset = c(230020,926520),
+                           scale = 220)
+    SpatialPolygonsRescale(layout.scale.bar(),
+                           offset = c(229500, 926595),
+                           scale = 500, txt = "500", fill = c("transparent", "black"), col = "black", at = 250)
+  })
+
+levels(lc_1985)[[1]]["Value"] <- levels(lc_1971)[[1]]["Class_name"]
+levelplot(lc_1985, main = "Landcover: 1985") + 
+  layer({
+    SpatialPolygonsRescale(layout.north.arrow(),
+                           offset = c(230020,926520),
+                           scale = 220)
+    SpatialPolygonsRescale(layout.scale.bar(),
+                           offset = c(229500, 926595),
+                           scale = 500, txt = "500", fill = c("transparent", "black"), col = "black", at = 250)
+  })
+
+
 
 #Data prep for Q1:
 ########################################################
+
 
 # create boolean image of "Built": 
 # reclassification matrix: is, becomes
@@ -16,8 +48,25 @@ not_built <- rbind(c(2L, 0L),
                    c(4L, 0L))
 
 my_built_reclass <- rbind(built, not_built)
-built_bool_71 <- reclassify(lc_1971, rcl = my_built_reclass)
-built_bool_85 <- reclassify(lc_1985, rcl = my_built_reclass)
+
+#reclassify to boolean and ready for categorical mapping
+built_bool_71 <- reclassify(lc_1971, rcl = my_built_reclass) %>% 
+  as.factor()
+
+built_bool_85 <- reclassify(lc_1985, rcl = my_built_reclass) %>% 
+  as.factor()
+
+rat <- levels(built_bool_71)[[1]]
+rat$landcover <- c("Not Built", "Built")
+levels(built_bool_71) <- rat
+levels(built_bool_85) <- rat
+
+levelplot(built_bool_71,
+          main = "Boolean Image of Built Landcover: 1971",
+          ylab = "")
+levelplot(built_bool_85)
+
+
 
 #create mask
 built <- c(1L, 0)
@@ -47,7 +96,8 @@ my_TOC1 <- TOC(index = -distance_71,
                boolean = gain_of_built,
                mask = not_built_bool_71,
                NAval = 0,
-               progress = T)
+               progress = T) %>% 
+  scaling(scalingFactor = 10000, newUnits = "Hectares")
 plot(my_TOC1,
      main = "Relationship between Gain of Built 1971-85 and Distance from Built in 1971")
 
@@ -55,12 +105,21 @@ plot(my_TOC1,
 ######################################################
 
 # reclassification order is important for this package
-reclassed_1971_matrix <- rbind(c(1L, 0L),
-                               c(2L, 1L),
-                               c(3L, 2L),
-                               c(4L, 3L))
-reclassed_1971 <- reclassify(lc_1971, rcl = reclassed_1971_matrix) #new index image
+reclassed_1971_matrix <- rbind(c(1L, 0L), #Built
+                               c(2L, 3L), #Water
+                               c(3L, 2L), #Forest
+                               c(4L, 1L)) #Barren
+reclassed_1971 <- reclassify(lc_1971, rcl = reclassed_1971_matrix) %>% 
+                      as.factor()
 
+#just to remember classification codes...
+rat <- levels(reclassed_1971)[[1]]
+rat$landcover <- c("Built",
+                   "Water",
+                   "Forest",
+                   "Baren")
+levels(reclassed_1971) <- rat
+  
 # Q2 Analysis:
 #####################################################
 
@@ -71,7 +130,9 @@ my_TOC2 <- TOC(index = reclassed_1971,
                boolean = gain_of_built,
                mask = not_built_bool_71,
                NAval = 0,
-               progress = T)
+               progress = T) %>% 
+  scaling(scalingFactor = 10000, newUnits = "Hectares")
+
 
 plot(my_TOC2, labelThres = T, posL = 4,
      main = "Relationship Between Gain of Built 1971-1985 and Landuse in 1971")
